@@ -1,0 +1,266 @@
+package org.firstinspires.ftc.teamcode.current.auto;
+
+import androidx.annotation.NonNull;
+
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.SequentialAction;
+import com.acmerobotics.roadrunner.VelConstraint;
+import com.acmerobotics.roadrunner.ftc.Actions;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+import com.qualcomm.robotcore.hardware.Servo;
+
+import org.firstinspires.ftc.teamcode.MecanumDrive2;
+
+@Autonomous(name = "Competition Auto Blue - Turret Bot preload compen", group = "competition")
+public class closeAutoBlueNewPreloadCompen extends LinearOpMode {
+
+    /* ──────────────── hardware ──────────────── */
+    private DcMotor intake;
+    public DcMotorEx flywheel1, flywheel2, gecko;
+    public Servo hood, turret1, turret2;
+
+    public class Robot {
+        private class intake implements Action {
+            @Override public boolean run(@NonNull TelemetryPacket p) {
+                 intake.setPower(1);
+                gecko.setPower(1);
+                return false;
+            }
+        }
+        public Action intake() { return new intake(); }
+
+        private class fire implements Action {
+            @Override public boolean run(@NonNull TelemetryPacket p) {
+                flywheel1.setVelocity((double) (3300 * 28) / 60);
+                flywheel2.setVelocity((double) (3300 * 28) / 60);
+                 intake.setPower(1);
+                gecko.setPower(-1);
+                return false;
+            }
+        }
+        public Action fire() { return new fire(); }
+
+        private class fire1 implements Action {
+            @Override public boolean run(@NonNull TelemetryPacket p) {
+                intake.setPower(1);
+                gecko.setPower(-1);
+                flywheel1.setVelocity((double) (3000 * 28) / 60);
+                flywheel2.setVelocity((double) (3000 * 28) / 60);
+                return false;
+            }
+        }
+        public Action fire1() { return new fire1(); }
+
+        private class stopFire implements Action {
+            @Override public boolean run(@NonNull TelemetryPacket p) {
+                 intake.setPower(0);
+                gecko.setPower(0);
+                return false;
+            }
+        }
+        public Action stopFire() { return new stopFire(); }
+
+        private class flywheelUp implements Action {
+            @Override public boolean run(@NonNull TelemetryPacket p) {
+
+                hood.setPosition(.5);
+                turret1.setPosition(.485);
+                turret2.setPosition(.485);
+                flywheel1.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(400, 0, 0, 20));
+                flywheel2.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(400, 0, 0, 20));
+                flywheel1.setVelocity((double) (3300 * 28) / 60);
+                flywheel2.setVelocity((double) (3300 * 28) / 60);
+                return false;
+            }
+        }
+        public Action flywheelUp() { return new flywheelUp(); }
+
+        private class flywheelUpPre implements Action {
+            @Override public boolean run(@NonNull TelemetryPacket p) {
+
+                hood.setPosition(.5);
+                turret1.setPosition(.54);
+                turret2.setPosition(.54);
+                flywheel1.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(400, 0, 0, 20));
+                flywheel2.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(400, 0, 0, 20));
+                flywheel1.setVelocity((double) (3200 * 28) / 60);
+                flywheel2.setVelocity((double) (3200 * 28) / 60);
+                return false;
+            }
+        }
+        public Action flywheelUpPre() { return new flywheelUpPre(); }
+    }
+
+    @Override
+    public void runOpMode() throws InterruptedException {
+
+        /* ---- initialize hardware ---- */
+        intake     = hardwareMap.get(DcMotor.class, "intake");
+        flywheel1  = hardwareMap.get(DcMotorEx.class, "flywheel1");
+        flywheel2  = hardwareMap.get(DcMotorEx.class, "flywheel2");
+        gecko      = hardwareMap.get(DcMotorEx.class, "gecko");
+        hood       = hardwareMap.get(Servo.class, "hood");
+        turret1     = hardwareMap.get(Servo.class, "turret");
+        turret2     = hardwareMap.get(Servo.class, "turret2");
+
+        flywheel1.setDirection(DcMotorEx.Direction.REVERSE);
+        flywheel2.setDirection(DcMotorEx.Direction.REVERSE);
+        turret1.setDirection(Servo.Direction.REVERSE);
+
+        /* ---- S Selection (Toggle) ---- */
+        int S = 1; // 1 = Red, -1 = Blue
+        while (!isStarted() && !isStopRequested()) {
+            if (gamepad1.b) S = 1;  // B for RED
+            if (gamepad1.x) S = -1; // X for BLUE
+
+            telemetry.addLine("--- S SELECTION ---");
+            telemetry.addData("SELECTED S", S == 1 ? "RED (B)" : "BLUE (X)");
+            telemetry.update();
+        }
+
+        /* ---- Adaptive Braking Constraint ---- */
+        VelConstraint adaptiveBrake = (robotPose, path, pathPos) -> {
+            double distLeft = path.length() - pathPos;
+            double cruiseVel = 30.0;
+            double slowVel = 5.0;
+            double brakeZone = 20.0;
+
+            if (distLeft < brakeZone) {
+                return slowVel + (cruiseVel - slowVel) * (distLeft / brakeZone);
+            }
+            return cruiseVel;
+        };
+
+        /* ---- Poses & Actions ---- */
+        Pose2d initialPose = new Pose2d(-46.5, -52.5, Math.toRadians(-127));
+        Pose2d afterPreload = new Pose2d(-14.5, -15.5, Math.toRadians(-145));
+
+        MecanumDrive2 drive = new MecanumDrive2(hardwareMap, initialPose);
+
+
+        // ================== FIXED BLOCK ==================
+        org.firstinspires.ftc.teamcode.GoBildaPinpointDriver odo = hardwareMap.get(org.firstinspires.ftc.teamcode.GoBildaPinpointDriver.class,"pinpoint");
+
+        // 1. SET GEOMETRY FIRST (Must match TeleOp EXACTLY)
+        // If these don't match, the coordinate system will warp between modes
+        odo.setOffsets(-42, -90, org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit.MM);
+
+        // Check your TeleOp: Do you use FORWARD or REVERSE? Copy it here.
+        // Assuming FORWARD based on your previous messages:
+        odo.setEncoderDirections(
+                org.firstinspires.ftc.teamcode.GoBildaPinpointDriver.EncoderDirection.FORWARD,
+                org.firstinspires.ftc.teamcode.GoBildaPinpointDriver.EncoderDirection.FORWARD
+      );
+
+        // 2. NOW SET THE POSITION
+        odo.setPosition(new org.firstinspires.ftc.robotcore.external.navigation.Pose2D(
+                org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit.INCH,
+                initialPose.position.x,
+                initialPose.position.y,
+                org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.RADIANS,
+                initialPose.heading.toDouble()
+      ));
+        // =================================================
+
+
+        Robot robot = new Robot();
+
+        Action PRELOAD = drive.actionBuilder(initialPose)
+                .afterDisp(0, robot.flywheelUpPre())
+                .setTangent(Math.toRadians(-315))
+                .splineToLinearHeading(new Pose2d(-14.5, -15.5, Math.toRadians(-145)), Math.toRadians(-315), adaptiveBrake)
+                .waitSeconds(1)
+                .stopAndAdd(robot.fire())
+                .waitSeconds(2)
+                .stopAndAdd(robot.stopFire())
+                .build();
+
+        Action PPG = drive.actionBuilder(afterPreload)
+                .afterDisp(0, robot.flywheelUp())
+                .afterDisp(0, robot.intake())
+                .setTangent(Math.toRadians(-90))
+                // Added adaptiveBrake here
+                .setTangent(Math.toRadians(-0))
+                .splineToSplineHeading(new Pose2d(-10, -20, Math.toRadians(-90)), Math.toRadians(-90), adaptiveBrake)
+                .splineToSplineHeading(new Pose2d(-10, -50, Math.toRadians(-90)), Math.toRadians(-90), adaptiveBrake)
+                .build();
+
+        Action FLUSH = drive.actionBuilder(new Pose2d(-10, -60, Math.toRadians(-90)))
+                .setTangent(Math.toRadians(-270))
+                .splineToLinearHeading(new Pose2d(-6, -38, Math.toRadians(-180)), Math.toRadians(-90))
+                .setTangent(Math.toRadians(-90))
+                .splineToSplineHeading(new Pose2d(-6, -54, Math.toRadians(-180)), Math.toRadians(-90))
+                .build();
+
+        Action RETURN_AND_SHOOT = drive.actionBuilder(new Pose2d(-6, -54, Math.toRadians(-180)))
+                .setTangent(Math.toRadians(-90))
+                .splineToSplineHeading(new Pose2d(-14.5, -15.5, Math.toRadians(-125)), Math.toRadians(-225), adaptiveBrake)
+                .stopAndAdd(robot.fire1())
+                .waitSeconds(1)
+                .build();
+
+        Action PGP = drive.actionBuilder(new Pose2d(-14.5, -15.5, Math.toRadians(-145)))
+                .afterDisp(0, robot.intake())
+                .setTangent(Math.toRadians(-0))
+                .splineToSplineHeading(new Pose2d(13, -20, Math.toRadians(-90)), Math.toRadians(-90), adaptiveBrake)
+                .waitSeconds(.2)
+                .splineToSplineHeading(new Pose2d(13, -60, Math.toRadians(-90)), Math.toRadians(-90), adaptiveBrake)
+                .build();
+
+        Action RETURN_AND_SHOOT_PGP = drive.actionBuilder(new Pose2d(13, -60, Math.toRadians(-90)))
+                .setTangent(Math.toRadians(90))
+                .splineToSplineHeading(new Pose2d(-14.5, -15.5, Math.toRadians(-125)), Math.toRadians(-225), adaptiveBrake)
+                .stopAndAdd(robot.fire1())
+                .waitSeconds(1)
+                .build();
+
+        Action GPP = drive.actionBuilder(new Pose2d(-14.5, -15.5, Math.toRadians(-145)))
+                .afterDisp(0, robot.intake())
+                .setTangent(Math.toRadians(-0))
+                .splineToSplineHeading(new Pose2d(36, -20, Math.toRadians(-90)), Math.toRadians(-90), adaptiveBrake)
+                .waitSeconds(.2)
+                .splineToSplineHeading(new Pose2d(36, -60, Math.toRadians(-90)), Math.toRadians(-90), adaptiveBrake)
+                .build();
+
+        Action RETURN_AND_SHOOT_GPP = drive.actionBuilder(new Pose2d(36, -60, Math.toRadians(-90)))
+                .setTangent(Math.toRadians(-270))
+                .splineToSplineHeading(new Pose2d(-14.5, -15.5, Math.toRadians(-145)), Math.toRadians(-225), adaptiveBrake)
+                .stopAndAdd(robot.fire())
+                .waitSeconds(1)
+                .build();
+
+        Action PARK = drive.actionBuilder(new Pose2d(-14.5, -15.5, Math.toRadians(-145)))
+                .setTangent(Math.toRadians(-90))
+                .splineToSplineHeading(new Pose2d(0, -38, Math.toRadians(-180)), Math.toRadians(-90))
+                .build();
+
+        waitForStart();
+        if (isStopRequested()) return;
+
+        Actions.runBlocking(new SequentialAction(
+                PRELOAD,
+                PPG,
+                FLUSH,
+                RETURN_AND_SHOOT,
+                PGP,
+                RETURN_AND_SHOOT_PGP,
+                GPP,
+                RETURN_AND_SHOOT_GPP,
+                PARK/**/
+      ));
+        // === ADD THIS BLOCK ===
+// Save the RoadRunner position to the storage file
+// Use localizer.getPose() instead of drive.pose
+        if (drive.localizer.getPose() != null) {
+            org.firstinspires.ftc.teamcode.Subsystems.PoseStorage.currentPose = drive.localizer.getPose();
+        }
+// ======================
+
+    }
+}
