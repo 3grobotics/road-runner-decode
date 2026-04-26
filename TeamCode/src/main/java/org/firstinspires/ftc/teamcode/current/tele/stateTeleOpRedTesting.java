@@ -24,10 +24,14 @@ import org.firstinspires.ftc.teamcode.Subsystems.PoseStorage;
 @TeleOp(name = "shoot while drive test", group = "linear equations test")
 public class stateTeleOpRedTesting extends LinearOpMode {
 
-    Servo hood, turret1, turret2, PTO1, PTO2;
+    Servo hood, turret1, turret2, kr, kl;
     DcMotorEx f1, f2, gecko;
     DcMotor intake, frontLeft, frontRight, backLeft, backRight;
     GoBildaPinpointDriver pip;
+
+    boolean bPressed = false;
+    int twistState   = 0;
+    boolean dPressed = false;
 
     public static double farSlope =  1750 ;
     double tx = -72; // Target X
@@ -50,6 +54,10 @@ public class stateTeleOpRedTesting extends LinearOpMode {
         backRight = hardwareMap.get(DcMotor.class,  "backRight ");
         backLeft = hardwareMap.get(DcMotor.class,   "backLeft  ");
         frontLeft = hardwareMap.get(DcMotor.class,  "frontLeft ");
+
+        kr = hardwareMap.get(Servo.class,"kickstandRight");
+        kl = hardwareMap.get(Servo.class,"kickstandLeft");
+
 
 
 
@@ -293,7 +301,29 @@ public class stateTeleOpRedTesting extends LinearOpMode {
 
 
 
+            if (gamepad1.b && !bPressed) {
+                twistState = (twistState + 1) % 2;
+                bPressed = true;
+            } else if (!gamepad1.b) {
+                bPressed = false;
+            }
 
+            if (gamepad2.dpad_up && !dPressed) {
+                twistState = (twistState + 1) % 2;
+                dPressed = true;
+            } else if (!gamepad2.dpad_up) {
+                dPressed = false;
+            }
+            switch (twistState){
+                case 0:
+                    kr.setPosition(.45);
+                    kl.setPosition(.45);
+                    break;
+                case 1:
+                    kr.setPosition(.5);
+                    kl.setPosition(.5);
+                    break;
+            }
 
 
              axial   = gamepad1.left_stick_y;

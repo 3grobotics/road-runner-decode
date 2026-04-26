@@ -165,7 +165,7 @@ public class closeAutoRed12BALL extends LinearOpMode {
                 .splineToLinearHeading(new Pose2d(-14.5, 15.5, Math.toRadians(145)), Math.toRadians(315), adaptiveBrake)
                 .waitSeconds(1)
                 .stopAndAdd(robot.fire())
-                .waitSeconds(2)
+                .waitSeconds(1)
                 .stopAndAdd(robot.stopFire())
 
                 // middle spike
@@ -182,7 +182,7 @@ public class closeAutoRed12BALL extends LinearOpMode {
                 .splineToLinearHeading(new Pose2d(-14.5, 15.5, Math.toRadians(145)), Math.toRadians(180), adaptiveBrake)
                 //.waitSeconds(2)
                 .stopAndAdd(robot.fire())
-                .waitSeconds(2)
+                .waitSeconds(1)
                 .stopAndAdd(robot.stopFire())
 
                 // goal spike
