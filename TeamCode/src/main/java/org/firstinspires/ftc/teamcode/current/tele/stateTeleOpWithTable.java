@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.current.tele;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -14,6 +15,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.GoBildaPinpointDriver;
 import org.firstinspires.ftc.teamcode.Subsystems.ShooterLookupTable;
+@Disabled
 
 @TeleOp(name = "state TeleOp with table", group = "linear equations test")
 public class stateTeleOpWithTable extends LinearOpMode {
