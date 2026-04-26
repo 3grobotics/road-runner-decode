@@ -3,12 +3,14 @@ package org.firstinspires.ftc.teamcode.current;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.controller.PIDFController;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 @Config
+@Disabled
 
 @TeleOp(name="custom velocity pidf", group="Examples")
 public class ftclibTeleOpTest extends OpMode {

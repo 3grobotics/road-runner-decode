@@ -30,6 +30,8 @@ import org.firstinspires.ftc.teamcode.Subsystems.turret;
 
 import java.util.ArrayList;
 import java.util.List;
+@Disabled
+
 @Config
 @TeleOp(name = "teleop blue", group = "TeleOp")
 /* opmode*/
