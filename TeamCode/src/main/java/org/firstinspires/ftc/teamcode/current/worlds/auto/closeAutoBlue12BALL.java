@@ -165,24 +165,29 @@ public class closeAutoBlue12BALL extends LinearOpMode {
                 .splineToLinearHeading(new Pose2d(-14.5, -15.5, Math.toRadians(-125)), Math.toRadians(-315), adaptiveBrake)
                 .waitSeconds(1)
                 .stopAndAdd(robot.fire())
-                .waitSeconds(2)
+                .waitSeconds(1)
                 .stopAndAdd(robot.stopFire())
 
                 // middle spike
                 .turnTo(Math.toRadians(-90))
                 .afterDisp(0, robot.intake())
-                .setTangent(Math.toRadians(-315))
-                .splineToLinearHeading(new Pose2d(15, -57, Math.toRadians(-90)), Math.toRadians(-90), adaptiveBrake)
+                .setTangent(Math.toRadians(0))
+                .splineToLinearHeading(new Pose2d(5, -20, Math.toRadians(-90)), Math.toRadians(315), adaptiveBrake)
+                .setTangent(Math.toRadians(315))
+                .splineToLinearHeading(new Pose2d(11, -60, Math.toRadians(-90)), Math.toRadians(-90), adaptiveBrake)
+
 
                 .setTangent(Math.toRadians(-270))
-                .splineToLinearHeading(new Pose2d(1, -57, Math.toRadians(-90)), Math.toRadians(-90))
+                .splineToLinearHeading(new Pose2d(6, -46, Math.toRadians(-90)), Math.toRadians(135))
+                .setTangent(Math.toRadians(215))
+                .splineToLinearHeading(new Pose2d(1, -60, Math.toRadians(-90)), Math.toRadians(-90))
 
 
                 .setTangent(Math.toRadians(-270))
                 .splineToLinearHeading(new Pose2d(-14.5, -15.5, Math.toRadians(-125)), Math.toRadians(-180), adaptiveBrake)
                 //.waitSeconds(2)
                 .stopAndAdd(robot.fire())
-                .waitSeconds(2)
+                .waitSeconds(1)
                 .stopAndAdd(robot.stopFire())
 
                 // goal spike
@@ -197,7 +202,7 @@ public class closeAutoBlue12BALL extends LinearOpMode {
                 .splineToLinearHeading(new Pose2d(-14.5, -15.5, Math.toRadians(-125)), Math.toRadians(-245), adaptiveBrake)
                 //.waitSeconds(2)
                 .stopAndAdd(robot.fire())
-                .waitSeconds(2)
+                .waitSeconds(1)
                 .stopAndAdd(robot.stopFire())
 
                 // closest to loading zone spike
@@ -212,7 +217,7 @@ public class closeAutoBlue12BALL extends LinearOpMode {
                 .splineToLinearHeading(new Pose2d(-14.5, -15.5, Math.toRadians(-125)), Math.toRadians(-245), adaptiveBrake)
                 //.waitSeconds(2)
                 .stopAndAdd(robot.fire())
-                .waitSeconds(2)
+                .waitSeconds(1)
                 .stopAndAdd(robot.stopFire())
 
                 .setTangent(Math.toRadians(-0))

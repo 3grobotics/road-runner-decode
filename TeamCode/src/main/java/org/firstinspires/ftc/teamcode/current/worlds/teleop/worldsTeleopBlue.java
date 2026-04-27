@@ -29,12 +29,12 @@ public class worldsTeleopBlue extends LinearOpMode {
     GoBildaPinpointDriver pip;
 
     boolean bPressed = false;
-    int twistState   = 0;
+    int kickState   = 0;
     boolean dPressed = false;
 
-    public static double farSlope =  1750 ;
+    public static double farSlope =  1950 ;
     double tx = -72; // Target X
-    double ty = 72;  // Target Y
+    double ty = -72;  // Target Y
     double t = 1;
 
     double samOffset = 5;
@@ -42,8 +42,6 @@ public class worldsTeleopBlue extends LinearOpMode {
     double axial;
     double lateral;
     double yawCmd;
-
-
 
     double robotX;
     double robotY;
@@ -61,6 +59,7 @@ public class worldsTeleopBlue extends LinearOpMode {
     double robotHeading;
     double calculatedTurretRad;
     double finalServoDegrees;
+    double samOffsetv = 0;
     @Override
     public void runOpMode() {
         // Hardware Mapping
@@ -82,7 +81,11 @@ public class worldsTeleopBlue extends LinearOpMode {
         kr = hardwareMap.get(Servo.class,"kickstandRight");
         kl = hardwareMap.get(Servo.class,"kickstandLeft");
 
+        boolean up = gamepad2.dpad_up;
+        boolean down = gamepad2.dpad_down;
 
+        boolean prevUp = up;
+        boolean prevDown = down;
 
 
         // Directions
@@ -142,29 +145,29 @@ public class worldsTeleopBlue extends LinearOpMode {
             //^ this cant be in brackets ^
 
             /* shooting while moving stuff */ {
-            vy = pip.getVelY(DistanceUnit.INCH);
-            vx = pip.getVelX(DistanceUnit.INCH);
+                vy = pip.getVelY(DistanceUnit.INCH);
+                vx = pip.getVelX(DistanceUnit.INCH);
 
 
-            tx = -72 - (vx * t); // 72 or tx maybe
-            ty = -72 - (vy * t); // 72 or tx maybe
+                tx = -72 - (vx * t); // 72 or tx maybe
+                ty = -72 - (vy * t); // 72 or tx maybe
 
-            robotX = pip.getPosX(DistanceUnit.INCH);
-            robotY = pip.getPosY(DistanceUnit.INCH);
+                robotX = pip.getPosX(DistanceUnit.INCH);
+                robotY = pip.getPosY(DistanceUnit.INCH);
 
-            xl = tx - robotX;
-            yl = ty - robotY;
-            hypot = Math.sqrt((xl * xl) + (yl * yl));
+                xl = tx - robotX;
+                yl = ty - robotY;
+                hypot = Math.sqrt((xl * xl) + (yl * yl));
 
 
-            if (hypot < 80) {
-                t = 0.003 * hypot + 0.347;
-            } else if (hypot < 100 && hypot > 80) {
-                t = 0.004 * hypot + 0.263;
-            } else if (hypot > 100) {
-                t = 0.003 * hypot + 0.367;
+                if (hypot < 80) {
+                    t = 0.003 * hypot + 0.347;
+                } else if (hypot < 100 && hypot > 80) {
+                    t = 0.004 * hypot + 0.263;
+                } else if (hypot > 100) {
+                    t = 0.003 * hypot + 0.367;
+                }
             }
-        }
 
             /* turret stuff */ {
                 angleToGoal = Math.atan2(yl, xl);
@@ -242,6 +245,20 @@ public class worldsTeleopBlue extends LinearOpMode {
                 }
                 vTarget = Range.clip(vTarget, 0, 2500); // Adjust max based on motor
 
+                up = gamepad2.dpad_up;
+                down = gamepad2.dpad_down;
+
+
+                if (up && !prevUp && !down) {
+                    samOffsetv = Range.clip(samOffsetv + 50, -2000, 2000);
+                }
+                if (down && !prevDown && !up) {
+                    samOffsetv = Range.clip(samOffsetv - 50, -2000, 2000);
+                }
+
+                prevUp = up;
+                prevDown = down;
+
 
                 if (gamepad1.x) {
                     var = 1;
@@ -250,8 +267,8 @@ public class worldsTeleopBlue extends LinearOpMode {
                 }
 
                 if (var == 1) {
-                    f1.setVelocity(vTarget);
-                    f2.setVelocity(vTarget);
+                    f1.setVelocity(vTarget + samOffsetv);
+                    f2.setVelocity(vTarget + samOffsetv);
                 } else {
                     f1.setVelocity(0);
                     f2.setVelocity(0);
@@ -278,22 +295,22 @@ public class worldsTeleopBlue extends LinearOpMode {
 
             /* kickstand stuff */ {
                 if (gamepad1.b && !bPressed) {
-                    twistState = (twistState + 1) % 2;
+                    kickState = (kickState + 1) % 2;
                     bPressed = true;
                 } else if (!gamepad1.b) {
                     bPressed = false;
                 }
 
-                if (gamepad2.dpad_up && !dPressed) {
-                    twistState = (twistState + 1) % 2;
+                if (gamepad2.left_stick_button && !dPressed) {
+                    kickState = (kickState + 1) % 2;
                     dPressed = true;
-                } else if (!gamepad2.dpad_up) {
+                } else if (!gamepad2.left_stick_button) {
                     dPressed = false;
                 }
-                switch (twistState) {
+                switch (kickState) {
                     case 0:
-                        kr.setPosition(.45);
-                        kl.setPosition(.45);
+                        kr.setPosition(.6);
+                        kl.setPosition(.4);
                         break;
                     case 1:
                         kr.setPosition(.5);
@@ -301,7 +318,7 @@ public class worldsTeleopBlue extends LinearOpMode {
                         break;
                 }
             }
-            
+
             /* driving stuff */ {
                 axial = gamepad1.left_stick_y;
                 lateral = -gamepad1.left_stick_x;
@@ -321,18 +338,19 @@ public class worldsTeleopBlue extends LinearOpMode {
 
             /* odometry reset stuff */ {
                 if (gamepad1.dpad_up) {
-                    pip.setPosition(new Pose2D(DistanceUnit.INCH, -68.02, 28.72, AngleUnit.DEGREES, 91.2));
+                    pip.setPosition(new Pose2D(DistanceUnit.INCH, -68.02, -28.72, AngleUnit.DEGREES, -91.2));
                     samOffset = 0;
                 } else if (gamepad1.dpad_down) {
                     pip.resetPosAndIMU();
                     samOffset = 0;
-                } else if (gamepad1.dpad_left) {
-                    pip.setPosition(new Pose2D(DistanceUnit.INCH, 62, -65, AngleUnit.DEGREES, 0));
+                } else if (gamepad1.dpad_left){
+                    pip.setPosition(new Pose2D(DistanceUnit.INCH, 62, 65, AngleUnit.DEGREES, -0));
                     samOffset = 0;
                 }
             }
 
             /* telemetry */
+            telemetry.addData("vel offset", samOffsetv);
             telemetry.addData("Distance (Hypot)", hypot);
             telemetry.addData("Target Velocity", vTarget);
             telemetry.addData("Hood Position", hpos);

@@ -21,8 +21,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.GoBildaPinpointDriver;
 import org.firstinspires.ftc.teamcode.MecanumDrive2;
 
-@Autonomous(name = "close Auto Red 12 Ball", group = "competition")
-public class closeAutoRed12BALL extends LinearOpMode {
+@Autonomous(name = "close Auto Red 15 Ball", group = "competition")
+public class closeAutoRed15BALL extends LinearOpMode {
 
     /* ──────────────── hardware ──────────────── */
     private DcMotor intake;
@@ -43,6 +43,7 @@ public class closeAutoRed12BALL extends LinearOpMode {
 
     double vx;
     double vy;
+    double offset = 10;
 
 
     public class Robot {
@@ -92,7 +93,7 @@ public class closeAutoRed12BALL extends LinearOpMode {
 
                 xl = tx - robotX;
                 yl = ty - robotY;
-                hypot = Math.sqrt((xl * xl) + (yl * yl)) + 5;
+                hypot = Math.sqrt((xl * xl) + (yl * yl)) + offset;
 
 
                 if (hypot < 80) {
@@ -129,7 +130,7 @@ public class closeAutoRed12BALL extends LinearOpMode {
 
                 flywheel1.setVelocity(vTarget);
                 flywheel2.setVelocity(vTarget);
-                
+
                 /*flywheel1.setVelocity((double) (2800 * 28) / 60);
                 flywheel2.setVelocity((double) (2800 * 28) / 60);*/
                 return true;}
@@ -152,6 +153,15 @@ public class closeAutoRed12BALL extends LinearOpMode {
             }
         }
         public Action flywheelUpPre() { return new flywheelUpPre(); }
+
+
+        private class lowerVelocity implements Action {
+            @Override public boolean run(@NonNull TelemetryPacket p) {
+                offset = 5;
+                return false;
+            }
+        }
+        public Action lowerVelocity() { return new lowerVelocity(); }
     }
 
     @Override
@@ -217,7 +227,7 @@ public class closeAutoRed12BALL extends LinearOpMode {
                 GoBildaPinpointDriver.EncoderDirection.FORWARD
         );
         pip.setPosition(new org.firstinspires.ftc.robotcore.external.navigation.Pose2D(
-                org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit.INCH,
+                DistanceUnit.INCH,
                 initialPose.position.x, initialPose.position.y,
                 org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.RADIANS,
                 initialPose.heading.toDouble()
@@ -235,25 +245,38 @@ public class closeAutoRed12BALL extends LinearOpMode {
                 .splineToLinearHeading(new Pose2d(-14.5, 15.5, Math.toRadians(145)), Math.toRadians(315))
 
 
-                // middle spike
+                //cc middle spike
                 .afterDisp(0, robot.intake())
+                .afterDisp(0, robot.lowerVelocity())
                 .setTangent(Math.toRadians(315))
                 .splineToSplineHeading(new Pose2d(12, 50, Math.toRadians(90)), Math.toRadians(90))
 
 
 
                 .setTangent(Math.toRadians(270))
-                .splineToLinearHeading(new Pose2d(1, 57, Math.toRadians(90)), Math.toRadians(90))
+                .splineToLinearHeading(new Pose2d(-14.5, 15.5, Math.toRadians(145)), Math.toRadians(180))
+                //.waitSeconds(2)
+                .stopAndAdd(robot.fire())
+                .waitSeconds(.5)
+                .stopAndAdd(robot.stopFire())
+
+                //cc flush cycle
+                .afterDisp(0, robot.intake())
+                .setTangent(Math.toRadians(315))
+                .splineToLinearHeading(new Pose2d(5, 55, Math.toRadians(90)), Math.toRadians(90))
+                .setTangent(Math.toRadians(90))
+                .splineToSplineHeading(new Pose2d(25, 55, Math.toRadians(135)), Math.toRadians(45))
+                .waitSeconds(1)
 
                 .setTangent(Math.toRadians(270))
                 .splineToLinearHeading(new Pose2d(-14.5, 15.5, Math.toRadians(145)), Math.toRadians(180))
                 //.waitSeconds(2)
                 .stopAndAdd(robot.fire())
-                .waitSeconds(1)
+                .waitSeconds(.5)
                 .stopAndAdd(robot.stopFire())
 
-                // goal spike
-                .turnTo(Math.toRadians(90))
+
+                //cc goal spike
                 .afterDisp(0, robot.intake())
                 .setTangent(Math.toRadians(0))
                 .splineToLinearHeading(new Pose2d(-12, 30, Math.toRadians(90)), Math.toRadians(90))
@@ -267,7 +290,33 @@ public class closeAutoRed12BALL extends LinearOpMode {
                 .waitSeconds(2)
                 .stopAndAdd(robot.stopFire())
 
-                // closest to loading zone spike
+
+                //cc flush cycle
+                .afterDisp(0, robot.intake())
+                .setTangent(Math.toRadians(315))
+                .splineToLinearHeading(new Pose2d(5, 55, Math.toRadians(90)), Math.toRadians(90))
+                .setTangent(Math.toRadians(90))
+                .splineToSplineHeading(new Pose2d(25, 55, Math.toRadians(135)), Math.toRadians(45))
+                .waitSeconds(1)
+
+                .setTangent(Math.toRadians(270))
+                .splineToLinearHeading(new Pose2d(-14.5, 15.5, Math.toRadians(145)), Math.toRadians(180))
+                //.waitSeconds(2)
+                .stopAndAdd(robot.fire())
+                .waitSeconds(.5)
+                .stopAndAdd(robot.stopFire())
+
+
+                // park
+                .setTangent(Math.toRadians(0))
+                .splineToLinearHeading(new Pose2d(1, 40, Math.toRadians(90)), Math.toRadians(90))
+
+
+
+
+
+
+               /* // closest to loading zone spike
                 //.turnTo(Math.toRadians(90))
                 .afterDisp(0, robot.intake())
                 .setTangent(Math.toRadians(0))
@@ -286,7 +335,7 @@ public class closeAutoRed12BALL extends LinearOpMode {
                 // park
                 .setTangent(Math.toRadians(0))
                 .splineToLinearHeading(new Pose2d(1, 40, Math.toRadians(90)), Math.toRadians(90))
-
+*/
                 /*.afterDisp(0, robot.intake())
                 .setTangent(Math.toRadians(90))
                 .splineToSplineHeading(new Pose2d(6, 38, Math.toRadians(100)), Math.toRadians(90))

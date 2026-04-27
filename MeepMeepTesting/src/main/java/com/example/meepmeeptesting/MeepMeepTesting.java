@@ -30,12 +30,42 @@ public class MeepMeepTesting {
             return cruiseVel;
         };
 
-                myBot.runAction(myBot.getDrive().actionBuilder(new Pose2d(-14.5, 15.5, Math.toRadians(145)))
+                myBot.runAction(myBot.getDrive().actionBuilder( new Pose2d(-46.5, 52.5, Math.toRadians(127)))
+
+                        .setTangent(Math.toRadians(315))
+                        .splineToLinearHeading(new Pose2d(-14.5, 15.5, Math.toRadians(145)), Math.toRadians(315), adaptiveBrake)
 
 
+                        // middle spike
+                        //.turnTo(Math.toRadians(90))
+                        //.afterDisp(0, robot.intake())
+                        .setTangent(Math.toRadians(315))
+                        .splineToSplineHeading(new Pose2d(12, 50, Math.toRadians(90)), Math.toRadians(90), adaptiveBrake)
+
+/*
+
+                        .turnTo(Math.toRadians(-90))
+                        //.afterDisp(0, robot.intake())
+                        .setTangent(Math.toRadians(0))
+                        .splineToLinearHeading(new Pose2d(5, -20, Math.toRadians(-90)), Math.toRadians(315), adaptiveBrake)
+                        .setTangent(Math.toRadians(315))
+                        .splineToLinearHeading(new Pose2d(11, -60, Math.toRadians(-90)), Math.toRadians(-90), adaptiveBrake)
 
 
-                        .turnTo(Math.toRadians(90))
+                        .setTangent(Math.toRadians(-270))
+                        .splineToLinearHeading(new Pose2d(6, -46, Math.toRadians(-90)), Math.toRadians(135))
+                        //.setTangent(Math.toRadians(215))
+                        .splineToLinearHeading(new Pose2d(1, -60, Math.toRadians(-90)), Math.toRadians(-90))
+
+
+                        .setTangent(Math.toRadians(-270))
+                        .splineToLinearHeading(new Pose2d(-14.5, -15.5, Math.toRadians(-125)), Math.toRadians(-180), adaptiveBrake)
+                        //.waitSeconds(2)
+                        //.stopAndAdd(robot.fire())
+                        .waitSeconds(1)
+                        //.stopAndAdd(robot.stopFire())
+
+                       /* .turnTo(Math.toRadians(90))
                         //.afterDisp(0, robot.intake())
                         .setTangent(Math.toRadians(0))
                         .splineToLinearHeading(new Pose2d(37, 27, Math.toRadians(90)), Math.toRadians(90), adaptiveBrake)

@@ -29,10 +29,10 @@ public class worldsTeleopRed extends LinearOpMode {
     GoBildaPinpointDriver pip;
 
     boolean bPressed = false;
-    int twistState   = 0;
+    int kickState   = 0;
     boolean dPressed = false;
 
-    public static double farSlope =  1750 ;
+    public static double farSlope =  1950 ;
     double tx = -72; // Target X
     double ty = 72;  // Target Y
     double t = 1;
@@ -59,6 +59,7 @@ public class worldsTeleopRed extends LinearOpMode {
     double robotHeading;
     double calculatedTurretRad;
     double finalServoDegrees;
+    double samOffsetv = 0;
     @Override
     public void runOpMode() {
         // Hardware Mapping
@@ -80,7 +81,11 @@ public class worldsTeleopRed extends LinearOpMode {
         kr = hardwareMap.get(Servo.class,"kickstandRight");
         kl = hardwareMap.get(Servo.class,"kickstandLeft");
 
+        boolean up = gamepad2.dpad_up;
+        boolean down = gamepad2.dpad_down;
 
+        boolean prevUp = up;
+        boolean prevDown = down;
 
 
         // Directions
@@ -240,6 +245,20 @@ public class worldsTeleopRed extends LinearOpMode {
                 }
                 vTarget = Range.clip(vTarget, 0, 2500); // Adjust max based on motor
 
+                up = gamepad2.dpad_up;
+                down = gamepad2.dpad_down;
+
+
+                if (up && !prevUp && !down) {
+                    samOffsetv = Range.clip(samOffsetv + 50, -2000, 2000);
+                }
+                if (down && !prevDown && !up) {
+                    samOffsetv = Range.clip(samOffsetv - 50, -2000, 2000);
+                }
+
+                prevUp = up;
+                prevDown = down;
+
 
                 if (gamepad1.x) {
                     var = 1;
@@ -248,8 +267,8 @@ public class worldsTeleopRed extends LinearOpMode {
                 }
 
                 if (var == 1) {
-                    f1.setVelocity(vTarget);
-                    f2.setVelocity(vTarget);
+                    f1.setVelocity(vTarget + samOffsetv);
+                    f2.setVelocity(vTarget + samOffsetv);
                 } else {
                     f1.setVelocity(0);
                     f2.setVelocity(0);
@@ -276,22 +295,22 @@ public class worldsTeleopRed extends LinearOpMode {
 
             /* kickstand stuff */ {
                 if (gamepad1.b && !bPressed) {
-                    twistState = (twistState + 1) % 2;
+                    kickState = (kickState + 1) % 2;
                     bPressed = true;
                 } else if (!gamepad1.b) {
                     bPressed = false;
                 }
 
-                if (gamepad2.dpad_up && !dPressed) {
-                    twistState = (twistState + 1) % 2;
+                if (gamepad2.left_stick_button && !dPressed) {
+                    kickState = (kickState + 1) % 2;
                     dPressed = true;
-                } else if (!gamepad2.dpad_up) {
+                } else if (!gamepad2.left_stick_button) {
                     dPressed = false;
                 }
-                switch (twistState) {
+                switch (kickState) {
                     case 0:
-                        kr.setPosition(.45);
-                        kl.setPosition(.45);
+                        kr.setPosition(.6);
+                        kl.setPosition(.4);
                         break;
                     case 1:
                         kr.setPosition(.5);
@@ -331,6 +350,7 @@ public class worldsTeleopRed extends LinearOpMode {
             }
 
             /* telemetry */
+            telemetry.addData("vel offset", samOffsetv);
             telemetry.addData("Distance (Hypot)", hypot);
             telemetry.addData("Target Velocity", vTarget);
             telemetry.addData("Hood Position", hpos);
